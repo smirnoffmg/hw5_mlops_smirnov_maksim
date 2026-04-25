@@ -20,7 +20,6 @@ mlflow.db-journal
 
 # Output artifacts
 *.pkl
-metrics.json
 
 # IDE
 .vscode/

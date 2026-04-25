@@ -1,0 +1,56 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: uv run python src/prepare.py
+    deps:
+    - path: data/raw/wine.csv
+      hash: md5
+      md5: 2925c4a8cd201c79d97d3d283429ef23
+      size: 12261
+    - path: src/prepare.py
+      hash: md5
+      md5: 21218d59ef78107df1fe0bfa4e04ecb7
+      size: 2031
+    params:
+      params.yaml:
+        prepare.random_state: 42
+        prepare.split_ratio: 0.2
+    outs:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: f9747882339c7a11ad01c46e43bd9007
+      size: 2615
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 5ac769d42b290244ccdd91b8a01dddca
+      size: 9823
+  train:
+    cmd: uv run python src/train.py
+    deps:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: f9747882339c7a11ad01c46e43bd9007
+      size: 2615
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 5ac769d42b290244ccdd91b8a01dddca
+      size: 9823
+    - path: src/train.py
+      hash: md5
+      md5: 8e2c8b43b082c81f8f71cfb68d7f328e
+      size: 3263
+    params:
+      params.yaml:
+        prepare.split_ratio: 0.2
+        train.max_depth: 10
+        train.n_estimators: 100
+        train.random_state: 42
+    outs:
+    - path: metrics.json
+      hash: md5
+      md5: b9191c7610758c5989d30ffed8b17aa0
+      size: 89
+    - path: models/model.pkl
+      hash: md5
+      md5: dcc45919099e50c7170a82f7cff08ede
+      size: 212017

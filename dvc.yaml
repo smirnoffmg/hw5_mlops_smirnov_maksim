@@ -1,0 +1,29 @@
+stages:
+  prepare:
+    cmd: uv run python src/prepare.py
+    deps:
+      - src/prepare.py
+      - data/raw/wine.csv
+    params:
+      - prepare.split_ratio
+      - prepare.random_state
+    outs:
+      - data/processed/train.csv
+      - data/processed/test.csv
+
+  train:
+    cmd: uv run python src/train.py
+    deps:
+      - src/train.py
+      - data/processed/train.csv
+      - data/processed/test.csv
+    params:
+      - train.n_estimators
+      - train.max_depth
+      - train.random_state
+      - prepare.split_ratio
+    outs:
+      - models/model.pkl
+    metrics:
+      - metrics.json:
+          cache: false
