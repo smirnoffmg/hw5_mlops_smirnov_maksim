@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# uv
+.venv/
+
+# DVC artifacts (managed via DVC, not Git)
+data/raw/*
+data/processed/*
+models/*
+!**/.gitkeep
+
+# MLflow
+mlruns/
+mlflow.db
+mlflow.db-journal
+
+# Output artifacts
+*.pkl
+metrics.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
