@@ -13,5 +13,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "feast[postgres]>=0.62.0",
     "ruff>=0.15.12",
 ]
