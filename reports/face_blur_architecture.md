@@ -73,80 +73,11 @@
 - **Alerting** - алерт на падение recall (через периодический прогон на эталонном сете), на рост latency, на дисбаланс очереди
 - **Data Quality** - регулярная проверка sample'ов обработанных видео человеком (или на синтетике) - действительно ли все лица заблюрены
 
-## Mermaid-диаграмма
+## Схема архитектуры
 
-```mermaid
-graph TB
-    subgraph Client
-        U[Client App]
-    end
+![Face Blur Architecture](face_blur_architecture.png)
 
-    subgraph Ingestion
-        API[API Gateway]
-        RAW[(S3: raw)]
-        Q1[Kafka: video.uploaded]
-    end
-
-    subgraph Processing
-        SPL[Splitter]
-        Q2[Kafka: chunk.ready]
-        W1[Worker 1<br/>GPU]
-        W2[Worker 2<br/>GPU]
-        WN[Worker N<br/>GPU]
-        Q3[Kafka: chunk.processed]
-        MRG[Merger]
-        Q4[Kafka: video.processed]
-        PROC[(S3: processed)]
-        AUD[(S3: audit logs)]
-    end
-
-    subgraph ML
-        REG[MLflow Model Registry]
-        SRV[Triton Serving]
-    end
-
-    subgraph Serving
-        RAPI[Result API]
-        WH[Webhook Notifier]
-    end
-
-    subgraph Monitoring
-        PROM[Prometheus]
-        LOKI[Loki Logs]
-        OTEL[OpenTelemetry]
-    end
-
-    U -->|upload| API
-    API --> RAW
-    API --> Q1
-    Q1 --> SPL
-    SPL --> Q2
-    Q2 --> W1
-    Q2 --> W2
-    Q2 --> WN
-    SRV -.weights.-> W1
-    SRV -.weights.-> W2
-    SRV -.weights.-> WN
-    REG --> SRV
-    W1 --> Q3
-    W2 --> Q3
-    WN --> Q3
-    W1 --> AUD
-    W2 --> AUD
-    WN --> AUD
-    Q3 --> MRG
-    MRG --> PROC
-    MRG --> Q4
-    Q4 --> WH
-    WH --> U
-    U -->|fetch| RAPI
-    RAPI --> PROC
-
-    W1 -.metrics.-> PROM
-    W2 -.metrics.-> PROM
-    MRG -.logs.-> LOKI
-    API -.traces.-> OTEL
-```
+Схема сгенерирована через библиотеку [Diagrams](https://diagrams.mingrammer.com), исходник — [face_blur_diagram.py](face_blur_diagram.py). Mermaid-версия диаграммы приведена ниже в разделе «Mermaid-диаграмма».
 
 ## Сравнение с референсным кодом
 

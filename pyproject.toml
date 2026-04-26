@@ -5,6 +5,7 @@ requires-python = ">=3.12"
 dependencies = [
     "dvc>=3.67.1",
     "joblib>=1.5.3",
+    "matplotlib>=3.10.9",
     "mlflow>=3.11.1",
     "pandas>=2.3.3",
     "pyyaml>=6.0.3",
@@ -13,6 +14,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "diagrams>=0.25.1",
     "feast[postgres]>=0.62.0",
     "ruff>=0.15.12",
 ]

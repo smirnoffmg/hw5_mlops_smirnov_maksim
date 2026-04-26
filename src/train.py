@@ -7,12 +7,18 @@ import logging
 from pathlib import Path
 
 import joblib
+import matplotlib
+
+matplotlib.use("Agg")  # non-interactive backend, must be set before pyplot import
+
+import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
 import pandas as pd
 import yaml
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
+    ConfusionMatrixDisplay,
     accuracy_score,
     f1_score,
     precision_score,
@@ -54,6 +60,34 @@ def evaluate(y_true: pd.Series, y_pred) -> dict[str, float]:
     }
 
 
+def log_confusion_matrix(model, X_test: pd.DataFrame, y_test: pd.Series) -> None:
+    fig, ax = plt.subplots(figsize=(6, 5))
+    ConfusionMatrixDisplay.from_estimator(model, X_test, y_test, ax=ax)
+    ax.set_title("Confusion Matrix")
+    fig.tight_layout()
+    path = PROJECT_ROOT / "confusion_matrix.png"
+    fig.savefig(path, dpi=120)
+    plt.close(fig)
+    mlflow.log_artifact(str(path), artifact_path="plots")
+    path.unlink()
+
+
+def log_feature_importances(model, feature_names: pd.Index) -> None:
+    importances = pd.Series(
+        model.feature_importances_, index=feature_names
+    ).sort_values()
+    fig, ax = plt.subplots(figsize=(6, 6))
+    importances.plot.barh(ax=ax)
+    ax.set_title("Feature Importances")
+    ax.set_xlabel("Importance")
+    fig.tight_layout()
+    path = PROJECT_ROOT / "feature_importances.png"
+    fig.savefig(path, dpi=120)
+    plt.close(fig)
+    mlflow.log_artifact(str(path), artifact_path="plots")
+    path.unlink()
+
+
 def main() -> None:
     params = load_params()
     train_params = params["train"]
@@ -92,6 +126,9 @@ def main() -> None:
 
         mlflow.log_artifact(str(MODEL_PATH), artifact_path="model_pickle")
         mlflow.sklearn.log_model(model, name="model")
+
+        log_confusion_matrix(model, X_test, y_test)
+        log_feature_importances(model, X_train.columns)
 
         with METRICS_PATH.open("w") as f:
             json.dump(metrics, f, indent=2)

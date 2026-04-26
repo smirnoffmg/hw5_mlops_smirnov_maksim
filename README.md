@@ -4,7 +4,14 @@
 
 ## Цель проекта
 
-Собрать минимальный, но рабочий MLOps-контур для классификации Wine dataset: версионирование данных через DVC, трекинг экспериментов через MLflow, декларативный пайплайн и воспроизводимость от коммита до метрик. Дополнительно реализован Feature Store на Feast с Postgres в качестве хранилища.
+Задание направлено на построение минимального, но полноценного MLOps-контура, обеспечивающего:
+
+- воспроизводимость экспериментов;
+- контроль версий данных и моделей;
+- автоматизацию процесса обучения и оценки модели;
+- документирование процесса через DVC и MLflow.
+
+Дополнительно реализован Feature Store на Feast с Postgres в качестве хранилища.
 
 ## Как запустить
 
@@ -15,14 +22,17 @@ uv run dvc metrics show
 uv run mlflow ui --backend-store-uri sqlite:///mlflow.db
 ```
 
+**Примечание про DVC remote:** в проекте используется локальный DVC remote, поэтому `dvc pull` при первом клонировании не сработает. 
+Данные восстановятся автоматически при первом `dvc repro`: стадия `prepare` загружает Wine dataset напрямую из `sklearn.datasets.load_wine`.
+
 ## Краткое описание пайплайна
 
 Декларативный DVC-пайплайн из двух стадий:
 
-- **prepare** (`src/prepare.py`): загружает Wine dataset, делает стратифицированный train/test split. Параметры: `prepare.split_ratio`, `prepare.random_state`. Выход: `data/processed/train.csv`, `data/processed/test.csv`.
-- **train** (`src/train.py`):обучает `RandomForestClassifier`, считает метрики (accuracy, precision_macro, recall_macro, f1_macro), логирует параметры, метрики и модель в MLflow. Параметры: `train.n_estimators`, `train.max_depth`, `train.random_state`. Выход: `models/model.pkl`, `metrics.json`.
+- **prepare** (`src/prepare.py`) — загружает Wine dataset, делает стратифицированный train/test split. Параметры: `prepare.split_ratio`, `prepare.random_state`. Выход: `data/processed/train.csv`, `data/processed/test.csv`.
+- **train** (`src/train.py`) — обучает `RandomForestClassifier`, считает метрики (accuracy, precision_macro, recall_macro, f1_macro), логирует параметры, метрики, модель и графики (confusion matrix, feature importances) в MLflow. Параметры: `train.n_estimators`, `train.max_depth`, `train.random_state`. Выход: `models/model.pkl`, `metrics.json`.
 
-Все гиперпараметры в `params.yaml`. При их изменении `dvc repro` пересчитывает только зависимые стадии.
+Все гиперпараметры — в `params.yaml`. При их изменении `dvc repro` пересчитывает только зависимые стадии.
 
 ## Где смотреть UI MLflow
 
@@ -32,9 +42,15 @@ uv run mlflow ui --backend-store-uri sqlite:///mlflow.db
 
 Открыть [http://127.0.0.1:5000](http://127.0.0.1:5000). Эксперимент: `hw5-wine-classification`.
 
+### Скриншоты MLflow
+
+![MLflow runs](screenshots/runs.png)
+![MLflow graphs](screenshots/graphs.png)
+![MLflow plots](screenshots/plots.png)
+
 ## Feature Store
 
-Поднимается отдельно через Docker Compose, не зависит от основного пайплайна. Подробности - в [feature_store/README.md](feature_store/README.md).
+Поднимается отдельно через Docker Compose, не зависит от основного пайплайна. Подробности — в [feature_store/README.md](feature_store/README.md).
 
 ## Отчёты
 

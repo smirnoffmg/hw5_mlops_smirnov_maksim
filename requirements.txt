@@ -233,7 +233,9 @@ markupsafe==3.0.3
     #   mako
     #   werkzeug
 matplotlib==3.10.9
-    # via mlflow
+    # via
+    #   hw5
+    #   mlflow
 mdurl==0.1.2
     # via markdown-it-py
 mlflow==3.11.1
@@ -490,7 +492,7 @@ urllib3==2.6.3
     #   docker
     #   dulwich
     #   requests
-uvicorn==0.46.0
+uvicorn==0.34.0
     # via mlflow-skinny
 vine==5.1.0
     # via
